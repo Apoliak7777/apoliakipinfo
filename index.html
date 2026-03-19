@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="sk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Môj IP Skener</title>
+    <style>
+        /* Moderný tmavý dizajn podobný tvojej appke */
+        body {
+            background-color: #000;
+            color: #fff;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+            margin: 0;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 400px;
+        }
+
+        .ip-box {
+            background-color: #1c1c1e;
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 30px;
+            text-align: center;
+            border: 1px solid #333;
+        }
+
+        .label {
+            color: #8e8e93;
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 8px;
+        }
+
+        .ip-value {
+            font-size: 24px;
+            font-weight: bold;
+            color: #fff;
+        }
+
+        .scan-section {
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        input {
+            width: 100%;
+            padding: 15px;
+            background: #1c1c1e;
+            border: 1px solid #333;
+            border-radius: 8px;
+            color: white;
+            font-size: 16px;
+            box-sizing: border-box;
+            margin-bottom: 15px;
+        }
+
+        button {
+            background-color: #007aff;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .results {
+            margin-top: 20px;
+            font-size: 14px;
+            color: #ccc;
+            text-align: left;
+            background: #1c1c1e;
+            padding: 10px;
+            border-radius: 8px;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h2>IP Infos</h2>
+
+        <div class="ip-box">
+            <div class="label">Aktuálna verejná IP</div>
+            <div id="my-ip" class="ip-value">Načítavam...</div>
+        </div>
+
+        <div class="scan-section">
+            <h3>Zadaj IP na skenovanie</h3>
+            <input type="text" id="target-ip" placeholder="Napr. 8.8.8.8 alebo google.com">
+            <button onclick="lookupIP()">Hľadať info</button>
+            
+            <div id="results" class="results"></div>
+        </div>
+    </div>
+
+    <script>
+        // 1. Získanie tvojej IP adresy hneď po načítaní
+        async function getMyIP() {
+            try {
+                const response = await fetch('https://api.ipify.org?format=json');
+                const data = await response.json();
+                document.getElementById('my-ip').innerText = data.ip;
+            } catch (error) {
+                document.getElementById('my-ip').innerText = "Chyba načítania";
+            }
+        }
+
+        // 2. Funkcia na vyhľadanie informácií o inej IP
+        async function lookupIP() {
+            const target = document.getElementById('target-ip').value;
+            const resultsDiv = document.getElementById('results');
+            
+            if (!target) return alert("Zadaj adresu!");
+
+            resultsDiv.style.display = "block";
+            resultsDiv.innerHTML = "Hľadám informácie...";
+
+            try {
+                // Použijeme bezplatné API ipapi.co pre detaily
+                const response = await fetch(`https://ipapi.co/${target}/json/`);
+                const data = await response.json();
+
+                if (data.error) {
+                    resultsDiv.innerHTML = "IP nebola nájdená alebo je neplatná.";
+                } else {
+                    resultsDiv.innerHTML = `
+                        <strong>Mesto:</strong> ${data.city || 'Neznáme'}<br>
+                        <strong>Krajina:</strong> ${data.country_name}<br>
+                        <strong>Poskytovateľ (ISP):</strong> ${data.org}<br>
+                    `;
+                }
+            } catch (error) {
+                resultsDiv.innerHTML = "Nastala chyba pri hľadaní.";
+            }
+        }
+
+        // Spusti načítanie tvojej IP
+        getMyIP();
+    </script>
+</body>
+</html>
